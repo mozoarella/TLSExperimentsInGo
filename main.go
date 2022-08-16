@@ -89,7 +89,7 @@ func main() {
 			Subject:    c.Subject.String(),
 			Issuer:     c.Issuer.String(),
 		}
-		if i > 0 && i < 2 {
+		if i > 0 {
 			intermediates.AddCert(c)
 		}
 		TLScerts = append(TLScerts, cert)
