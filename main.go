@@ -132,10 +132,16 @@ func HandleTLSConnection(domain string, resp *http.Response) {
 	}
 
 	tlsInfo := TLSInfo{
-		Version:      tlsVersions[resp.TLS.Version],
 		CipherSuite:  tls.CipherSuiteName(resp.TLS.CipherSuite),
 		Protocol:     resp.TLS.NegotiatedProtocol,
 		Certificates: TLSCerts,
+	}
+
+	// Check if the TLS version used is in our version map and handle it if it's not (in case of very old or new versions)
+	if value, ok := tlsVersions[resp.TLS.Version]; ok {
+		tlsInfo.Version = value
+	} else {
+		tlsInfo.Version = "Unsupported"
 	}
 
 	// set ChainValidity and ChainError attributes of the tlsInfo object depending on whether there's a problem
@@ -168,13 +174,13 @@ func HandleNonTLSConnection(domain string) {
 func OutputJson(siteInfo SiteInfo) {
 	var siteByteBuf bytes.Buffer
 
-	sitejson, err := json.Marshal(siteInfo)
+	siteJSON, err := json.Marshal(siteInfo)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 
-	err = json.Indent(&siteByteBuf, sitejson, "", "    ")
+	err = json.Indent(&siteByteBuf, siteJSON, "", "    ")
 	if err != nil {
 		fmt.Println(err)
 	}
