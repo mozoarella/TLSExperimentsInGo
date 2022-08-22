@@ -30,7 +30,7 @@ type TLSCert struct {
 	ValidUntil string
 	ValidFor   int
 	Subject    string
-	DnsNames   []string
+	DnsNames   []string `json:",omitempty"`
 	Issuer     string
 }
 
@@ -52,8 +52,8 @@ func main() {
 	// define a time.Duration of 1 second for rounding purposes
 	oneSecond, _ := time.ParseDuration("1s")
 
-	//domain := "mozilla.org"
-	domain := "untrusted-root.badssl.com"
+	domain := "mozilla.org"
+	//domain := "untrusted-root.badssl.com"
 	url := fmt.Sprintf("https://%s", domain)
 
 	req, err := http.NewRequest("HEAD", url, nil)
@@ -85,10 +85,14 @@ func main() {
 			ValidFrom:  c.NotBefore.String(),
 			ValidUntil: c.NotAfter.String(),
 			ValidFor:   int(time.Duration.Round(c.NotAfter.Sub(time.Now()), oneSecond).Seconds()),
-			DnsNames:   c.DNSNames,
 			Subject:    c.Subject.String(),
 			Issuer:     c.Issuer.String(),
 		}
+		print(len(c.DNSNames))
+		if len(c.DNSNames) > 0 {
+			cert.DnsNames = c.DNSNames
+		}
+
 		if i > 0 {
 			intermediates.AddCert(c)
 		}
