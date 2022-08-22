@@ -76,6 +76,8 @@ func main() {
 }
 
 /*
+VerifyCertificateChain
+
 Simplified function to check certificate validity against a certificate pool.
 Returns the error from the x509 package if the chain is invalid or a simple "Chain is valid" when it's valid.
 */
@@ -160,7 +162,7 @@ func HandleNonTLSConnection(domain string) {
 }
 
 func OutputJson(siteInfo SiteInfo) {
-	var site_bb bytes.Buffer
+	var siteByteBuf bytes.Buffer
 
 	sitejson, err := json.Marshal(siteInfo)
 	if err != nil {
@@ -168,7 +170,10 @@ func OutputJson(siteInfo SiteInfo) {
 		return
 	}
 
-	json.Indent(&site_bb, sitejson, "", "    ")
+	err = json.Indent(&siteByteBuf, sitejson, "", "    ")
+	if err != nil {
+		fmt.Println(err)
+	}
 
-	fmt.Println(&site_bb)
+	fmt.Println(&siteByteBuf)
 }
