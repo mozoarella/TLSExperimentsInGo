@@ -141,7 +141,7 @@ func HandleTLSConnection(domain string, resp *http.Response) {
 	if value, ok := tlsVersions[resp.TLS.Version]; ok {
 		tlsInfo.Version = value
 	} else {
-		tlsInfo.Version = "Unsupported"
+		tlsInfo.Version = fmt.Sprintf("Unsupported: %#x", resp.TLS.Version)
 	}
 
 	// set ChainValidity and ChainError attributes of the tlsInfo object depending on whether there's a problem
