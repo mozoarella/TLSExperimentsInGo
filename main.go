@@ -105,7 +105,7 @@ func HandleTLSConnection(domain string, resp *http.Response) {
 
 	var intermediates = x509.NewCertPool()
 
-	var TLScerts []TLSCert
+	var TLSCerts []TLSCert
 
 	for i, c := range certificates {
 		cert := TLSCert{
@@ -122,14 +122,14 @@ func HandleTLSConnection(domain string, resp *http.Response) {
 		if i > 0 {
 			intermediates.AddCert(c)
 		}
-		TLScerts = append(TLScerts, cert)
+		TLSCerts = append(TLSCerts, cert)
 	}
 
 	tlsInfo := TLSInfo{
 		Version:      tlsVersions[resp.TLS.Version],
 		CipherSuite:  tls.CipherSuiteName(resp.TLS.CipherSuite),
 		Protocol:     resp.TLS.NegotiatedProtocol,
-		Certificates: TLScerts,
+		Certificates: TLSCerts,
 	}
 
 	// set ChainValidity and ChainError attributes of the tlsInfo object depending on whether there's a problem
