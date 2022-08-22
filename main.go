@@ -12,8 +12,9 @@ import (
 )
 
 type SiteInfo struct {
-	Domain  string
-	TLSInfo TLSInfo
+	Domain   string
+	TLSError string `json:",omitempty"`
+	TLSInfo  *TLSInfo
 }
 
 type TLSInfo struct {
@@ -50,8 +51,8 @@ func main() {
 	sslClient.Transport = &insecureTransporter
 
 	// define a time.Duration of 1 second for rounding purposes
-	oneSecond, _ := time.ParseDuration("1s")
 
+	//domain := "http.badssl.com"
 	domain := "mozilla.org"
 	//domain := "untrusted-root.badssl.com"
 	url := fmt.Sprintf("https://%s", domain)
@@ -61,6 +62,35 @@ func main() {
 		log.Fatal("Connection failed:", err)
 	}
 
+	resp, err := sslClient.Do(req)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+
+	if resp.TLS != nil {
+		HandleTLSConnection(domain, resp)
+	} else {
+		HandleNonTLSConnection(domain)
+	}
+
+}
+
+/*
+Simplified function to check certificate validity against a certificate pool.
+Returns the error from the x509 package if the chain is invalid or a simple "Chain is valid" when it's valid.
+*/
+func VerifyCertificateChain(certificate *x509.Certificate, pool *x509.CertPool) (valid bool, err error) {
+	chains, errors := certificate.Verify(x509.VerifyOptions{Intermediates: pool})
+	if errors != nil {
+		return false, errors
+	}
+	if chains != nil {
+		return true, nil
+	}
+	return false, nil
+}
+
+func HandleTLSConnection(domain string, resp *http.Response) {
 	tlsVersions := map[uint16]string{
 		tls.VersionSSL30: "SSL",
 		tls.VersionTLS10: "TLS 1.0",
@@ -69,10 +99,7 @@ func main() {
 		tls.VersionTLS13: "TLS 1.3",
 	}
 
-	resp, err := sslClient.Do(req)
-	if err != nil {
-		fmt.Println(err.Error())
-	}
+	oneSecond, _ := time.ParseDuration("1s")
 
 	certificates := resp.TLS.PeerCertificates
 
@@ -88,7 +115,6 @@ func main() {
 			Subject:    c.Subject.String(),
 			Issuer:     c.Issuer.String(),
 		}
-		print(len(c.DNSNames))
 		if len(c.DNSNames) > 0 {
 			cert.DnsNames = c.DNSNames
 		}
@@ -108,7 +134,7 @@ func main() {
 
 	// set ChainValidity and ChainError attributes of the tlsInfo object depending on whether there's a problem
 	// with the chain
-	valid, err := verifyCertificateChain(certificates[0], intermediates)
+	valid, err := VerifyCertificateChain(certificates[0], intermediates)
 	if valid {
 		tlsInfo.ChainValidity = true
 	} else {
@@ -118,12 +144,25 @@ func main() {
 
 	domainInfo := SiteInfo{
 		Domain:  domain,
-		TLSInfo: tlsInfo,
+		TLSInfo: &tlsInfo,
 	}
 
+	OutputJson(domainInfo)
+}
+
+func HandleNonTLSConnection(domain string) {
+	domainInfo := SiteInfo{
+		Domain:   domain,
+		TLSError: "This domain does not appear to support any TLS connections supported by us",
+	}
+
+	OutputJson(domainInfo)
+}
+
+func OutputJson(siteInfo SiteInfo) {
 	var site_bb bytes.Buffer
 
-	sitejson, err := json.Marshal(domainInfo)
+	sitejson, err := json.Marshal(siteInfo)
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -132,20 +171,4 @@ func main() {
 	json.Indent(&site_bb, sitejson, "", "    ")
 
 	fmt.Println(&site_bb)
-
-}
-
-/*
-Simplified function to check certificate validity against a certificate pool.
-Returns the error from the x509 package if the chain is invalid or a simple "Chain is valid" when it's valid.
-*/
-func verifyCertificateChain(certificate *x509.Certificate, pool *x509.CertPool) (valid bool, err error) {
-	chains, errors := certificate.Verify(x509.VerifyOptions{Intermediates: pool})
-	if errors != nil {
-		return false, errors
-	}
-	if chains != nil {
-		return true, nil
-	}
-	return false, nil
 }
