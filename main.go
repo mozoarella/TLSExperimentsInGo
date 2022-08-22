@@ -40,7 +40,10 @@ func main() {
 	/*
 		We make a copy of the default RoundTripper transport and disable certificate verification.
 		This is necessary because we want to check the chains ourselves instead of just failing the connection.
+
+		Suppressing the GoLand warning about a copied lock value because we're already using pointers to resolve that issue.
 	*/
+	//goland:noinspection GoVetCopyLock
 	var insecureTransporter = *http.DefaultTransport.(*http.Transport)
 	insecureTransporter.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 
@@ -49,8 +52,6 @@ func main() {
 	*/
 	var sslClient = new(http.Client)
 	sslClient.Transport = &insecureTransporter
-
-	// define a time.Duration of 1 second for rounding purposes
 
 	//domain := "http.badssl.com"
 	domain := "mozilla.org"
@@ -93,6 +94,8 @@ func VerifyCertificateChain(certificate *x509.Certificate, pool *x509.CertPool) 
 }
 
 func HandleTLSConnection(domain string, resp *http.Response) {
+	// Suppressing a GoLand warning about SSL being deprecated, we know. That's the entire point.
+	//goland:noinspection GoDeprecation
 	tlsVersions := map[uint16]string{
 		tls.VersionSSL30: "SSL",
 		tls.VersionTLS10: "TLS 1.0",
@@ -101,6 +104,7 @@ func HandleTLSConnection(domain string, resp *http.Response) {
 		tls.VersionTLS13: "TLS 1.3",
 	}
 
+	// define a time.Duration of 1 second for rounding purposes
 	oneSecond, _ := time.ParseDuration("1s")
 
 	certificates := resp.TLS.PeerCertificates
