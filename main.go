@@ -24,6 +24,7 @@ type TLSInfo struct {
 	ChainValidity bool
 	ChainError    string
 	Certificates  []TLSCert
+	OCSP          []byte
 }
 
 type TLSCert struct {
@@ -135,6 +136,7 @@ func HandleTLSConnection(domain string, resp *http.Response) {
 		CipherSuite:  tls.CipherSuiteName(resp.TLS.CipherSuite),
 		Protocol:     resp.TLS.NegotiatedProtocol,
 		Certificates: TLSCerts,
+		OCSP:         resp.TLS.OCSPResponse,
 	}
 
 	// Check if the TLS version used is in our version map and handle it if it's not (in case of very old or new versions)
