@@ -41,18 +41,16 @@ func main() {
 	/*
 		We make a copy of the default RoundTripper transport and disable certificate verification.
 		This is necessary because we want to check the chains ourselves instead of just failing the connection.
-
-		Suppressing the GoLand warning about a copied lock value because we're already using pointers to resolve that issue.
 	*/
-	//goland:noinspection GoVetCopyLock
-	var insecureTransporter = *http.DefaultTransport.(*http.Transport)
-	insecureTransporter.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+
+	imposterTransport := *http.DefaultTransport.(*http.Transport).Clone()
+	imposterTransport.TLSClientConfig.InsecureSkipVerify = true
 
 	/*
 		Create a client and set the transport to our new insecure one.
 	*/
 	var sslClient = new(http.Client)
-	sslClient.Transport = &insecureTransporter
+	sslClient.Transport = &imposterTransport
 
 	//domain := "http.badssl.com"
 	domain := "mozilla.org"
