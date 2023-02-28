@@ -30,10 +30,14 @@ type TLSInfo struct {
 type TLSCert struct {
 	ValidFrom  string
 	ValidUntil string
-	ValidFor   int
-	Subject    string
-	DnsNames   []string `json:",omitempty"`
-	Issuer     string
+	// Validity of the certificate in seconds
+	ValidFor int
+	// Full subject of the certificate.
+	Subject string
+	// Optional, contents of the certificate Subject Alternative Name field. Not applicable for signing certificates.
+	DnsNames []string `json:",omitempty"`
+	// Full subject of the issuing party.
+	Issuer string
 }
 
 func main() {
