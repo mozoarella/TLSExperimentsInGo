@@ -96,7 +96,9 @@ func VerifyCertificateChain(certificate *x509.Certificate, pool *x509.CertPool) 
 func HandleTLSConnection(domain string, resp *http.Response) {
 	// Suppressing a GoLand warning about SSL being deprecated, we know. That's the entire point.
 	//goland:noinspection GoDeprecation
+
 	tlsVersions := map[uint16]string{
+		//lint:ignore SA1019 We're the ones reporting on old versions so the linter doesn't need to :)
 		tls.VersionSSL30: "SSL",
 		tls.VersionTLS10: "TLS 1.0",
 		tls.VersionTLS11: "TLS 1.1",
@@ -117,7 +119,7 @@ func HandleTLSConnection(domain string, resp *http.Response) {
 		cert := TLSCert{
 			ValidFrom:  c.NotBefore.String(),
 			ValidUntil: c.NotAfter.String(),
-			ValidFor:   int(time.Duration.Round(c.NotAfter.Sub(time.Now()), oneSecond).Seconds()),
+			ValidFor:   int(time.Duration.Round(time.Until(c.NotAfter), oneSecond).Seconds()),
 			Subject:    c.Subject.String(),
 			Issuer:     c.Issuer.String(),
 		}
