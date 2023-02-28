@@ -45,6 +45,7 @@ func main() {
 
 	imposterTransport := *http.DefaultTransport.(*http.Transport).Clone()
 	imposterTransport.TLSClientConfig.InsecureSkipVerify = true
+	//imposterTransport.TLSClientConfig.MaxVersion = tls.VersionTLS13
 
 	/*
 		Create a client and set the transport to our new insecure one.
@@ -65,12 +66,12 @@ func main() {
 	resp, err := sslClient.Do(req)
 	if err != nil {
 		fmt.Println(err.Error())
-	}
-
-	if resp.TLS != nil {
-		HandleTLSConnection(domain, resp)
 	} else {
-		HandleNonTLSConnection(domain)
+		if resp.TLS != nil {
+			HandleTLSConnection(domain, resp)
+		} else {
+			HandleNonTLSConnection(domain)
+		}
 	}
 
 }
