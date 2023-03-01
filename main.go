@@ -37,7 +37,8 @@ type TLSCert struct {
 	// Optional, contents of the certificate Subject Alternative Name field. Not applicable for signing certificates.
 	DnsNames []string `json:",omitempty"`
 	// Full subject of the issuing party.
-	Issuer string
+	Issuer         string
+	IssuerCertURLs []string `json:",omitempty"`
 }
 
 func main() {
@@ -130,9 +131,11 @@ func HandleTLSConnection(domain string, resp *http.Response) {
 		if len(c.DNSNames) > 0 {
 			cert.DnsNames = c.DNSNames
 		}
-
 		if i > 0 {
 			intermediates.AddCert(c)
+		}
+		if len(c.IssuingCertificateURL) > 0 {
+			cert.IssuerCertURLs = c.IssuingCertificateURL
 		}
 		TLSCerts = append(TLSCerts, cert)
 	}
