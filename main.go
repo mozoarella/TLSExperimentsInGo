@@ -122,8 +122,8 @@ func HandleTLSConnection(domain string, resp *http.Response) {
 
 	for i, c := range certificates {
 		cert := TLSCert{
-			ValidFrom:  c.NotBefore.String(),
-			ValidUntil: c.NotAfter.String(),
+			ValidFrom:  c.NotBefore.Format("2006-01-02T15:04:05-0700"),
+			ValidUntil: c.NotAfter.Format("2006-01-02T15:04:05-0700"),
 			ValidFor:   int(time.Duration.Round(time.Until(c.NotAfter), oneSecond).Seconds()),
 			Subject:    c.Subject.String(),
 			Issuer:     c.Issuer.String(),
