@@ -41,6 +41,16 @@ type TLSCert struct {
 	IssuerCertURLs []string `json:",omitempty"`
 }
 
+// Map of TLS versions supported by crypto/tls mapped to human-readable names
+var tlsVersions = map[uint16]string{
+	//lint:ignore SA1019 We're the ones reporting on old versions so the linter doesn't need to :)
+	tls.VersionSSL30: "SSLv3",
+	tls.VersionTLS10: "TLS 1.0",
+	tls.VersionTLS11: "TLS 1.1",
+	tls.VersionTLS12: "TLS 1.2",
+	tls.VersionTLS13: "TLS 1.3",
+}
+
 func main() {
 
 	/*
@@ -99,17 +109,6 @@ func VerifyCertificateChain(certificate *x509.Certificate, pool *x509.CertPool) 
 }
 
 func HandleTLSConnection(domain string, resp *http.Response) {
-	// Suppressing a GoLand warning about SSL being deprecated, we know. That's the entire point.
-	//goland:noinspection GoDeprecation
-
-	tlsVersions := map[uint16]string{
-		//lint:ignore SA1019 We're the ones reporting on old versions so the linter doesn't need to :)
-		tls.VersionSSL30: "SSL",
-		tls.VersionTLS10: "TLS 1.0",
-		tls.VersionTLS11: "TLS 1.1",
-		tls.VersionTLS12: "TLS 1.2",
-		tls.VersionTLS13: "TLS 1.3",
-	}
 
 	// define a time.Duration of 1 second for rounding purposes
 	oneSecond, _ := time.ParseDuration("1s")
