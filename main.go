@@ -85,7 +85,7 @@ func main() {
 VerifyCertificateChain
 
 Simplified function to check certificate validity against a certificate pool.
-Returns the error from the x509 package if the chain is invalid or a simple "Chain is valid" when it's valid.
+When valid it returns true and nil, when invalid it returns false and any errors.
 */
 func VerifyCertificateChain(certificate *x509.Certificate, pool *x509.CertPool) (valid bool, err error) {
 	chains, errors := certificate.Verify(x509.VerifyOptions{Intermediates: pool})
